@@ -3,12 +3,12 @@ import numpy as np
 
 def assign_type(type):
     # assign characteristics with respect to the type to an enemy
-    all_enemies = {"walker": [20, 5, 'W'], "runner": [10, 20, 'R']} 
+    all_enemies = {"walker": [20, 1, 'W'], "runner": [10, 2, 'R']} 
     #hp, speed, console representation
     return(all_enemies[type])
 
 class enemy_obj:
-    def __init__(self, type, x, y):
+    def __init__(self, type, x, y, order):
         characteristics = assign_type(type)
         self.type = type
         self.hp, self.speed, self.representation = characteristics
@@ -16,6 +16,7 @@ class enemy_obj:
         # speed is the speed of movement
         self.x = x #enemy position
         self.y = y
+        self.order = order #order position 
         
     def change_position(self, new_x, new_y):
         #change x,y to the next position of the enemy 

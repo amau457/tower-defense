@@ -3,8 +3,8 @@ import numpy as np
 
 def assign_type(type):
     # assign characteristics with respect to the type to a tower
-    all_towers = {"soldier": [20, 5, 1, 5, 'S'], "archer": [10, 20, 1, 5, 'A']} 
-    #hp, range, attack_speed (/s), attack_damage, console representation
+    all_towers = {"soldier": [20, 1, 0, 50, 'S'], "archer": [10, 5, 1, 50, 'A']} 
+    #hp, range, attack_speed (cooldown time), attack_damage, console representation
     return(all_towers[type])
 
 class tower_obj:
@@ -14,12 +14,13 @@ class tower_obj:
         self.hp, self.range, self.attack_speed, self.attack_damage, self.representation = characteristics
         # hp the hp of the tower
         # range the range of action
-        # attack speed its speed in attack/s
+        # attack speed its speed in cooldown time
         # attack damage, the amount of damages it does per attack
         self.priority = "first" # the priority in targeting
         # posible values: "first", "last", "closest"
         self.x = x #tower position
         self.y = y
+        self.cooldown = 0 # 0 is not busy, other values are the time needed before next action
     
     def change_priority(self, new_priority):
         #change the priority setting
