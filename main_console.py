@@ -1,6 +1,7 @@
 # the main script for console visualisation of the game
 import towers
 import enemies
+import players
 import numpy as np
 
 class board:
@@ -187,40 +188,85 @@ def check_enemies_alive(enemy_list):
             return(True)
     return(False)
 
-def check_player_life(enemy_list, actual_board):
+def check_player_life(enemy_list, actual_board, player):
     # checks if the player has still some life
     # one enemy that cross the output = - one life
-    player_life = 10
     for enemy in enemy_list:
         if enemy.x >= actual_board.x_size:
             if enemy.hp > 0:
                 enemy.hp = 0
-                player_life -= 1
-    return(player_life)
+                player.health -= 1
+    return(player.health)
 
-            
+def ask_action(player, actual_board, tower_list):
+    test = True
+    while test:
+        print("possible actions:")
+        print("continue, buy, sell")
+        var = input("what do you want to do ?")
+        if var == "continue":
+            test = False
+
+        elif var == "buy":
+            print("towers:")
+            print("soldier", "archer")
+            var2 = input("which tower do you want to buy ?")
+            x = int(input("x pos ?"))
+            y = int(input("y pos ?"))
+            if var2 == "soldier" or var2 == "archer":
+                to_buy_tower = towers.tower_obj(var2, x, y)
+                if player.buy(to_buy_tower):
+                    tower_list.append(to_buy_tower)
+                    actual_board.place_tower(len(tower_list)+1, x, y)
+                    print('tower placed')
+                    print('')
+                else:
+                    print('not enough money') #we will show the amounts later..
+                    print('')
+            else:
+                print("tower does not exist")
+        
+        elif var == "sell":
+            print("not implemented yet")
+        
+        else:
+            print("unkown command")
+    return(player, actual_board, tower_list) #not necessary but safe
+
+
+
 def main():
     # main function to run the game
+    # create a player
+    player1 = players.player(0)
     # round 1
+    #create board
     actual_board = board((5,5)) #5x5 board
-    tower_list = [towers.tower_obj('soldier', 3, 1), towers.tower_obj('archer', 2, 4)]
-    for id, tow in enumerate(tower_list):
-        actual_board.place_tower(id+1, tow.x, tow.y)
+    #spawn the player (link it to the board)
+    player1.spawn(actual_board)
+
+    #add path
     path_list = [(0, 0, -1), (0, 1, -1), (0, 2, 1), (1, 2, 1), (2, 2, 1), (3 ,2 ,1), (4 ,2 ,1)]
     actual_board.add_path(path_list)
 
+    actual_board.print_board([], [], path_list) # to show to the player
+
+    tower_list = []
+    player1, actual_board, tower_list = ask_action(player1, actual_board, tower_list)
+
+    # wave of the level (will be generated automatically later)
     enemy_list = [enemies.enemy_obj('walker', 0, 0, 0),
                    enemies.enemy_obj('runner', 0, 0, 1),]
     actual_board.print_board(enemy_list, tower_list, path_list)
     print('')
-    player_life = check_player_life(enemy_list, actual_board)
+    player_life = check_player_life(enemy_list, actual_board, player1)
     while check_enemies_alive(enemy_list) and player_life >0: # while we still have enemies and player still alive
         tower_list, enemy_list, path_list = next_step(tower_list, enemy_list, path_list)
         actual_board.print_board(enemy_list, tower_list, path_list)
-        player_life = check_player_life(enemy_list, actual_board)
+        player_life = check_player_life(enemy_list, actual_board, player1)
     print('')
     print('life of the player:')
-    print(check_player_life(enemy_list, actual_board))
+    print(check_player_life(enemy_list, actual_board, player1))
 
                     
 

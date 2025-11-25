@@ -3,15 +3,15 @@ import numpy as np
 
 def assign_type(type):
     # assign characteristics with respect to the type to a tower
-    all_towers = {"soldier": [20, 1, 0, 50, 'S'], "archer": [10, 5, 1, 50, 'A']} 
-    #hp, range, attack_speed (cooldown time), attack_damage, console representation
+    all_towers = {"soldier": [20, 1, 0, 50, 'S', 10], "archer": [10, 5, 1, 50, 'A', 15]} 
+    #hp, range, attack_speed (cooldown time), attack_damage, console representation, price
     return(all_towers[type])
 
 class tower_obj:
     def __init__(self, type, x, y):
         characteristics = assign_type(type)
         self.type = type
-        self.hp, self.range, self.attack_speed, self.attack_damage, self.representation = characteristics
+        self.hp, self.range, self.attack_speed, self.attack_damage, self.representation, self.price = characteristics
         # hp the hp of the tower
         # range the range of action
         # attack speed its speed in cooldown time
