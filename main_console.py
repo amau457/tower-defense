@@ -15,8 +15,10 @@ class board:
         # the id is alwayd id_list + 1 (to differentiate with 0)
         if self.board[y, x] != 0:
             print("can't place here")
+            return(False)
         else:
             self.board[y, x] = tower_id
+            return(True)
         
     def print_board(self, enemy_list, tower_list, path_list):
         #visualisation of the board in console
@@ -141,7 +143,7 @@ class board:
             x, y, orientation = path
             self.board[y, x] = np.inf*(orientation) #+- infinity
 
-def next_step(tower_list, enemy_list, path_list):
+def next_step(tower_list, enemy_list, path_list, player):
     # do all the actions of one step (attack, move)
     # first we make all the towers attack
     for id_tow, tower in enumerate(tower_list):
@@ -149,6 +151,8 @@ def next_step(tower_list, enemy_list, path_list):
             target = tower.find_target(enemy_list) # the target to target 
             if not target == None:
                 target.hp -= tower.attack_damage
+                if target.hp <= 0: #if we kill the target, we gain money (2)
+                    player.money += 2
                 tower.cooldown = tower.attack_speed
         else: #if busy
             tower.cooldown -= 1
@@ -178,7 +182,7 @@ def next_step(tower_list, enemy_list, path_list):
                 enemy.y -= 1
             else:
                 break
-    return(tower_list, enemy_list, path_list)
+    return(tower_list, enemy_list, path_list, player)
 
 
 def check_enemies_alive(enemy_list):
@@ -208,30 +212,48 @@ def ask_action(player, actual_board, tower_list):
             test = False
 
         elif var == "buy":
+            print('')
+            print("money: ", player.money)
             print("towers:")
             print("soldier", "archer")
+            print("prices: 10, 15")
             var2 = input("which tower do you want to buy ?")
             x = int(input("x pos ?"))
             y = int(input("y pos ?"))
             if var2 == "soldier" or var2 == "archer":
                 to_buy_tower = towers.tower_obj(var2, x, y)
-                if player.buy(to_buy_tower):
-                    tower_list.append(to_buy_tower)
-                    actual_board.place_tower(len(tower_list)+1, x, y)
-                    print('tower placed')
+                if player.buy(to_buy_tower): #if we have the money
+                    if actual_board.place_tower(len(tower_list)+2, x, y): #if we can place the tower
+                        tower_list.append(to_buy_tower)
+                        print('tower placed')
+                    else:
+                        player.money += to_buy_tower.price #we give back the money
                     print('')
                 else:
-                    print('not enough money') #we will show the amounts later..
+                    print('not enough money')
+                    print('money: ', player.money)
                     print('')
             else:
                 print("tower does not exist")
         
         elif var == "sell":
+            print('')
             print("not implemented yet")
         
         else:
+            print('')
             print("unkown command")
-    return(player, actual_board, tower_list) #not necessary but safe
+    return(player, actual_board, tower_list) #not necessary but safe    
+
+def wave(wave_number):
+    #generates the enemies for wave_number 
+    #returns enemy_list
+    walker_number = wave_number
+    runner_number = wave_number//2 #simple formula for the moment
+    enemy_list = [enemies.enemy_obj('walker', 0, 0, k) for k in range (walker_number)]
+    enemy_list+= [enemies.enemy_obj('runner', 0, 0, k) for k in range (walker_number, walker_number+runner_number)]
+    #we will need to make the wave be a wave (not spawn all at the same time)
+    return(enemy_list)
 
 
 
@@ -252,21 +274,27 @@ def main():
     actual_board.print_board([], [], path_list) # to show to the player
 
     tower_list = []
-    player1, actual_board, tower_list = ask_action(player1, actual_board, tower_list)
+    wave_number = 1 # wave number
+    while player1.health > 0: #while the player is alive
+        print('')
+        print('wave number: ', wave_number)
+        print('money: ', player1.money)
+        player1, actual_board, tower_list = ask_action(player1, actual_board, tower_list)
 
-    # wave of the level (will be generated automatically later)
-    enemy_list = [enemies.enemy_obj('walker', 0, 0, 0),
-                   enemies.enemy_obj('runner', 0, 0, 1),]
-    actual_board.print_board(enemy_list, tower_list, path_list)
-    print('')
-    player_life = check_player_life(enemy_list, actual_board, player1)
-    while check_enemies_alive(enemy_list) and player_life >0: # while we still have enemies and player still alive
-        tower_list, enemy_list, path_list = next_step(tower_list, enemy_list, path_list)
+        # wave of the level (will be generated automatically later)
+        enemy_list = wave(wave_number)
         actual_board.print_board(enemy_list, tower_list, path_list)
+        print('')
         player_life = check_player_life(enemy_list, actual_board, player1)
-    print('')
-    print('life of the player:')
-    print(check_player_life(enemy_list, actual_board, player1))
+        while check_enemies_alive(enemy_list) and player_life >0: # while we still have enemies and player still alive
+            tower_list, enemy_list, path_list, player1 = next_step(tower_list, enemy_list, path_list, player1)
+            actual_board.print_board(enemy_list, tower_list, path_list)
+            player_life = check_player_life(enemy_list, actual_board, player1)
+        print('')
+        print('life of the player:')
+        print(check_player_life(enemy_list, actual_board, player1))
+        wave_number += 1 # increase wave number
+    print("Player dead, thank's for playing" )
 
                     
 

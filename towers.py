@@ -16,7 +16,7 @@ class tower_obj:
         # range the range of action
         # attack speed its speed in cooldown time
         # attack damage, the amount of damages it does per attack
-        self.priority = "first" # the priority in targeting
+        self.priority = "closest" # the priority in targeting
         # posible values: "first", "last", "closest"
         self.x = x #tower position
         self.y = y
